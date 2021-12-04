@@ -140,11 +140,18 @@ function main(){
     var fragmentShaderSource = `
         precision mediump float;
         varying vec4 fColor;
-
+        uniform vec3 uAmbientConstant;   
+        uniform float uAmbientIntensity;
         void main() {
-            gl_FragColor = fColor;
+            // Calculate the ambient effect
+            vec3 ambient = uAmbientConstant * uAmbientIntensity;
+            vec3 phong = ambient; 
+            vec3 resColor = vec3(fColor);
+            gl_FragColor = vec4(resColor * phong, 1.);
+           // gl_FragColor = fColor;
         }
     `;
+    
     
     // Create .c in GPU
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -187,6 +194,8 @@ function main(){
 
     thetaLoc = gl.getUniformLocation(shaderProgram, "theta"); 
     gl.clearColor( 0.2, 0.2, 0.2, 1.0 );
+    const uAmbientConstant = gl.getUniformLocation(shaderProgram, "uAmbientConstant");
+    const uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
     
     var speed = 0.0165; // nrp
     var dy = 0;
@@ -203,18 +212,20 @@ function main(){
         const leftObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                -1.2, 0, 0, 1.];
+                -1, 0, 0, 1.];
 
         const rightObject = [1., 0., 0., 0.,
             0., 1., 0., 0.,
             0., 0., 1., 0.,
-            1.2, dy, 0, 1.];
+            1, dy, 0, 1.];
 
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
                 0, 0, 0, 1.];
-
+                //add ambient light
+                gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); 
+                gl.uniform1f(uAmbientIntensity, 0.365); // 200+165
 
 
         gl.uniformMatrix4fv(u_matrix, false, leftObject);
@@ -226,6 +237,8 @@ function main(){
 
         //nambah kubus
         gl.uniform3fv(thetaLoc, theta3);
+        gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
+        gl.uniform1f(uAmbientIntensity, 1); // 100% of light
         gl.uniformMatrix4fv(u_matrix, false, cubeObject);
         gl.drawArrays( gl.TRIANGLES, 2 * len, cubeLen );
         requestAnimationFrame( render );
@@ -263,14 +276,15 @@ function colorCube()
 function square(a, b, c, d) 
 {
     var verticesC = [
-        vec3( -0.25, -0.25,  0.25 ),
-        vec3( -0.25,  0.25,  0.25 ),
-        vec3(  0.25,  0.25,  0.25 ),
-        vec3(  0.25, -0.25,  0.25 ),
-        vec3( -0.25, -0.25, -0.25 ),
-        vec3( -0.25,  0.25, -0.25 ),
-        vec3(  0.25,  0.25, -0.25 ),
-        vec3(  0.25, -0.25, -0.25 )
+        vec3( -0.15, -0.25,  0.15 ),
+        vec3( -0.15,  0.25,  0.15 ),
+        vec3(  0.15,  0.25,  0.15 ),
+        vec3(  0.15, -0.25,  0.15 ),
+        
+        vec3( -0.15, -0.25, -0.15 ),
+        vec3( -0.15,  0.25, -0.15 ),
+        vec3(  0.15,  0.25, -0.15 ),
+        vec3(  0.15, -0.25, -0.15 )
     ];
 
     var vertexColors = [
