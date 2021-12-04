@@ -8,10 +8,14 @@ var points = [];
 var colors = [];
 var points2 = [];
 var colors2 = [];
+var points3 = [];//kubus
+var colors3 = [];//kubus
+
 
 // rotation stuff
 var theta = [ 205, 0, 0 ];
 var theta2 = [ -165, 0, 0 ];
+var theta3 = [0, 0, 0]; //nambah kubus
 
 var thetaLoc;   // rotation uniform
 var cyl_vertices, cyl_colors;
@@ -24,7 +28,7 @@ function main(){
     canvas.height = canvas.offsetHeight;
     gl = canvas.getContext('webgl');                // The brush and the paints
 
-    // Gelas Kiri
+    // Kiri
     var x, z;
     var angle = 0;
     var inc = Math.PI * 2.0 / NumSides;
@@ -52,7 +56,7 @@ function main(){
     }
     quad(0, NumSides-1, 2*NumSides-1, NumSides, points, colors,cyl_vertices);
 
-    // Gelas Kanan
+    // Kanan
     var x2, z2;
     var angle2 = 0;
 
@@ -80,8 +84,9 @@ function main(){
 
     var len = 6*NumSides;
 
-    var vertices = [...points, ...points2];
-    var totcolors = [...colors, ...colors2];
+    var vertices = [...points, ...points2, ...points3];
+    var totcolors = [...colors, ...colors2, ...colors3];
+    var cubeLen = points3.length;
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
@@ -204,12 +209,24 @@ function main(){
             0., 0., 1., 0.,
             1.2, dy, 0, 1.];
 
+            const cubeObject = [1., 0., 0., 0.,
+                0., 1., 0., 0.,
+                0., 0., 1., 0.,
+                1.2, dy, 0, 1.];
+
+
+
         gl.uniformMatrix4fv(u_matrix, false, leftObject);
         gl.drawArrays( gl.TRIANGLES, 0, len );
 
         gl.uniform3fv(thetaLoc, theta2);
         gl.uniformMatrix4fv(u_matrix, false, rightObject);
         gl.drawArrays( gl.TRIANGLES, len, len );
+
+        //nambah kubus
+        gl.uniform3fv(thetaLoc, theta3);
+        gl.uniformMatrix4fv(u_matrix, false, cubeObject);
+        gl.drawArrays( gl.TRIANGLES, 2 * len, cubeLen );
         requestAnimationFrame( render );
     }
     render();
@@ -229,5 +246,55 @@ function quad(a, b, c, d, points, colors, cyl_vertices)
     for ( var i = 0; i < indices.length; ++i ) {
         points.push( cyl_vertices[indices[i]] );
         colors.push( democolors[i] );
+    }
+}
+
+function colorCube()
+{
+    square( 1, 0, 3, 2 );
+    square( 2, 3, 7, 6 );
+    square( 3, 0, 4, 7 );
+    square( 6, 5, 1, 2 );
+    square( 4, 5, 6, 7 );
+    square( 5, 4, 0, 1 );
+}
+
+function square(a, b, c, d) 
+{
+    var verticesC = [
+        vec3( -0.25, -0.25,  0.25 ),
+        vec3( -0.25,  0.25,  0.25 ),
+        vec3(  0.25,  0.25,  0.25 ),
+        vec3(  0.25, -0.25,  0.25 ),
+        vec3( -0.25, -0.25, -0.25 ),
+        vec3( -0.25,  0.25, -0.25 ),
+        vec3(  0.25,  0.25, -0.25 ),
+        vec3(  0.25, -0.25, -0.25 )
+    ];
+
+    var vertexColors = [
+        [ 1, 1, 1, 1.0 ],  // orange
+		[ 1, 1, 1, 1.0 ],  // cyan
+        [ 1, 1, 1, 1.0 ],  // red
+        [ 1, 1, 1, 1.0 ],  // yellow
+        [ 1, 1, 1, 1.0 ],  // green
+		[ 1, 1, 1, 1.0 ],  // magenta
+        [ 1, 1, 1, 1.0 ],  // blue
+        [ 1, 1, 1, 1.0 ],   // white
+
+    ];
+
+    // Partion the square into two triangles in order for
+    // WebGL to be able to render it.      
+    // Vertex color assigned by the index of the vertex
+    
+    var indices = [ a, b, c, a, c, d ];
+
+    for ( var i = 0; i < indices.length; ++i ) {
+        pointsC.push( verticesC[indices[i]] );
+        colorsC.push( vertexColors[indices[i]] );
+    
+        //for solid colored faces use 
+        //colorsC.push(vertexColors[a]);    
     }
 }
