@@ -24,8 +24,8 @@ var cyl_vertices2, cyl_colors2;
 function main(){
     // Access the canvas through DOM: Document Object Model
     canvas = document.getElementById('gl-canvas');   // The paper
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+     canvas.width  = canvas.offsetWidth;
+     canvas.height = canvas.offsetHeight;
     gl = canvas.getContext('webgl');                // The brush and the paints
 
     // Kiri
@@ -83,6 +83,7 @@ function main(){
     quad(0, NumSides-1, 2*NumSides-1, NumSides, points2, colors2, cyl_vertices2);
 
     var len = 6*NumSides;
+    colorCube();
 
     var vertices = [...points, ...points2, ...points3];
     var totcolors = [...colors, ...colors2, ...colors3];
@@ -212,7 +213,7 @@ function main(){
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                1.2, dy, 0, 1.];
+                0, 0, 0, 1.];
 
 
 
@@ -291,10 +292,7 @@ function square(a, b, c, d)
     var indices = [ a, b, c, a, c, d ];
 
     for ( var i = 0; i < indices.length; ++i ) {
-        pointsC.push( verticesC[indices[i]] );
-        colorsC.push( vertexColors[indices[i]] );
-    
-        //for solid colored faces use 
-        //colorsC.push(vertexColors[a]);    
+        points3.push( verticesC[indices[i]] );
+        colors3.push( vertexColors[indices[i]] );
     }
 }
