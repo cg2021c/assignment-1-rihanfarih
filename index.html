@@ -1,4 +1,5 @@
 <html>
+    <title>Grafom3 - Rihan Farih 0165</title>
 <style type="text/css">
     canvas { background: rgb(213, 213, 218); }
 </style>
@@ -51,14 +52,14 @@ void main() {
 }
 </script>
 
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="gl-matrix-min.js"></script>
 <script type="text/javascript" src="webgl-utils.js"></script>
-<script type="text/javascript" src="initShaders-2.js"></script>
 <script type="text/javascript" src="InitShaders.js"></script>
 <script type="text/javascript" src="MV.js"></script>
-<script type="text/javascript" src="cylinder2.js"></script>
 
-<body>
-    <canvas id="gl-canvas" style="background-color:black; border:0px; margin:0px; padding:0px; position:absolute; left:0px; top:0px; width:100%; height:100%;">
+<body onload="main()">
+    <canvas id="gl-canvas" style="background-color:rgb(240, 236, 236); border:0px; margin:0px; padding:0px; position:absolute; left:0px; top:0px; width:100%; height:100%;">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
 </body>

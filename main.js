@@ -1,672 +1,233 @@
+//Mirrored from www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/ SIXTH_EDITION/CODE/WebGL/7E/04/cube.html by HTTrack Website Copier/3.x [XR&CO'2010], Fri, 23 Aug 2013 18:49:22 GMT 
+var canvas;
+var gl;
+
+var NumSides = 12;
+// flattened points and colors to be sent to Vertex Shader
+var points = [];
+var colors = [];
+var points2 = [];
+var colors2 = [];
+
+// rotation stuff
+var theta = [ 205, 0, 0 ];
+var theta2 = [ -165, 0, 0 ];
+
+var thetaLoc;   // rotation uniform
+var cyl_vertices, cyl_colors;
+var cyl_vertices2, cyl_colors2;
+
 function main(){
-  var canvas = document.getElementById("myCanvas");
-  var gl = canvas.getContext("webgl");
+    // Access the canvas through DOM: Document Object Model
+    canvas = document.getElementById('gl-canvas');   // The paper
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    gl = canvas.getContext('webgl');                // The brush and the paints
 
-  var vertices_left = [
+    // Gelas Kiri
+    var x, z;
+    var angle = 0;
+    var inc = Math.PI * 2.0 / NumSides;
 
-      // Gagang
-   -0.15, -0.25,  1.0, 1.0, 1.0, 
-      -0.30, -0.24,   1.0, 1.0, 1.0, 
-      -0.16, -0.19,   1.0, 1.0, 1.0, 
+    cyl_vertices = new Array(NumSides * 2);
+    cyl_colors   = new Array(NumSides * 2);
 
-      -0.15,-0.25,   1.0, 1.0, 1.0, 
-      -0.16, -0.19,   1.0, 1.0, 1.0, 
-      -0.11,-0.15,   1.0, 1.0, 1.0, 
+    alt_colors = [[1.0, 0.5, 0.5, 1.0], [0.5, 1.0, 0.5, 1.0], [0.5, 0.5, 1.0, 1.0]];
    
-  - 0.16,-0.19,   1.0, 1.0, 1.0, 
-      -0.11,-0.15,   1.0, 1.0, 1.0, 
-      -0.12,-0.1,   1.0, 1.0, 1.0, 
+    for(var i_side = 0; i_side < NumSides; i_side++) {
+        x = 0.35 * Math.cos(angle);
+        z = 0.35 * Math.sin(angle);
 
-      -0.11,-0.15,   1.0, 1.0, 1.0,
-      -0.12,-0.1,   1.0, 1.0, 1.0, 
-      -0.09,-0.08,   1.0, 1.0, 1.0, 
+        cyl_vertices[i_side] = vec3(x, 1, z);
+        cyl_colors[i_side] = alt_colors[i_side%3];
 
-     -0.12,-0.1,    1.0, 1.0, 1.0, 
-      -0.09,-0.08,   1.0, 1.0, 1.0, 
-      -0.11,-0.05,   1.0, 1.0, 1.0, 
+        cyl_vertices[i_side+NumSides] = vec3(x, -0.8, z);
+        cyl_colors[i_side+NumSides] = alt_colors[i_side%3];
 
-      -0.09,-0.08,   1.0, 1.0, 1.0, 
-      -0.11, -0.05,  1.0, 1.0, 1.0, 
-      -0.08, 0.0,  1.0, 1.0, 1.0, 
-   
-      -0.11,-0.05,   1.0, 1.0, 1.0, 
-      -0.08, 0.0,   1.0, 1.0, 1.0, 
-      -0.1, 0.0,  1.0, 1.0, 1.0, 
+        angle += inc;
+    }
 
-      -0.08,0.0,   1.0, 1.0, 1.0, 
-      -0.1, 0.0,   1.0, 1.0, 1.0, 
-      -0.09,0.08,   1.0, 1.0, 1.0, 
-   
-   -0.1,0.0,   1.0, 1.0, 1.0, 
-      -0.09, 0.08,   1.0, 1.0, 1.0, 
-      -0.11,0.05,   1.0, 1.0, 1.0, 
+    for(var i_side = 0; i_side < NumSides-1; i_side++) {
+        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points, colors,cyl_vertices);
+    }
+    quad(0, NumSides-1, 2*NumSides-1, NumSides, points, colors,cyl_vertices);
 
-      -0.09,0.08,   1.0, 1.0, 1.0, 
-      -0.11,0.05,   1.0, 1.0, 1.0, 
-      -0.11, 0.15,  1.0, 1.0, 1.0, 
+    // Gelas Kanan
+    var x2, z2;
+    var angle2 = 0;
 
-     -0.11,0.08,   1.0, 1.0, 1.0, 
-     -0.11,0.15,   1.0, 1.0, 1.0, 
-     -0.22,0.1,   1.0, 1.0, 1.0, 
+    cyl_vertices2 = new Array(NumSides * 2);
+    cyl_colors2   = new Array(NumSides * 2);
 
-     -0.25, 0.08,  1.0, 1.0, 1.0, 
-      -0.20, 0.14,   1.0, 1.0, 1.0, 
-      -0.26, 0.19,   1.0, 1.0, 1.0, 
+    alt_colors2 = [[1.0, 0.5, 0.5, 1.0], [0.5, 1.0, 0.5, 1.0], [0.5, 0.5, 1.0, 1.0]];
+    for(var i_side = 0; i_side < NumSides; i_side++) {
+        x2 = 0.35 * Math.cos(angle2);
+        z2 = 0.35 * Math.sin(angle2);
 
-      -0.25,0.08,   1.0, 1.0, 1.0, 
-      -0.26, 0.15,   1.0, 1.0, 1.0, 
-      -0.11,0.15,   1.0, 1.0, 1.0, 
+        cyl_vertices2[i_side] = vec3(x2, 0.8, z2);
+        cyl_colors2[i_side] = alt_colors[i_side%3];
 
-     
+        cyl_vertices2[i_side+NumSides] = vec3(x2, -0.8, z2);
+        cyl_colors2[i_side+NumSides] = alt_colors[i_side%3];
 
-//----------
+        angle2 += inc;
+    }
+
+    for(var i_side = 0; i_side < NumSides-1; i_side++) {
+        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points2, colors2, cyl_vertices2);
+    }
+    quad(0, NumSides-1, 2*NumSides-1, NumSides, points2, colors2, cyl_vertices2);
+
+    var len = 6*NumSides;
+
+    var vertices = [...points, ...points2];
+    var totcolors = [...colors, ...colors2];
+
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(totcolors), gl.STATIC_DRAW );
+
+
+    var vertexShaderSource = `
+    attribute  vec4 vPosition;
+    attribute  vec4 vColor;
+    varying vec4 fColor;
     
-
-      // TUTUP 
-        //lengkung atas
-      -0.20, 0.20,  0.1, 0.20, 0.85, 
-      -0.28, 0.25,  0.1, 0.20, 0.85, 
-      -0.26, 0.20,  0.1, 0.20, 0.85, 
-
-      -0.28, 0.25,  0.1, 0.20, 0.85, 
-      -0.26, 0.20,  0.1, 0.20, 0.85, 
-      -0.31, 0.24,  0.1, 0.20, 0.85, 
-
-      -0.28, 0.25,  0.1, 0.20, 0.85, 
-      -0.31, 0.24,  0.1, 0.20, 0.85, 
-      -0.35, 0.29,  0.1, 0.20, 0.85, 
-
-      -0.31, 0.24,  0.1, 0.20, 0.85, 
-      -0.35, 0.29,  0.1, 0.20, 0.85, 
-      -0.4, 0.28,  0.1 ,0.20, 0.85, 
-
-      -0.35, 0.29,  0.1, 0.20, 0.85, 
-      -0.4, 0.28,  0.1, 0.20, 0.85, 
-      -0.42, 0.31,  0.1, 0.20, 0.85, 
-
-      -0.4, 0.28,  0.1, 0.20, 0.85, 
-      -0.42, 0.31,  0.1, 0.20, 0.85, 
-      -0.45, 0.29,  0.1, 0.20, 0.85, 
-
-      -0.42, 0.31,  0.1, 0.20, 0.85, 
-      -0.45, 0.29,  0.1, 0.20, 0.85, 
-      -0.5, 0.32,  0.1, 0.20, 0.85, 
-
-      -0.45, 0.29,  0.1, 0.20, 0.85, 
-      -0.5, 0.32,  0.1, 0.20, 0.85, 
-      -0.5, 0.3,  0.1, 0.20, 0.85, 
-
-      -0.5, 0.32,  0.1, 0.20, 0.85, 
-      -0.5, 0.3,  0.1, 0.20, 0.85, 
-      -0.58, 0.31,  0.1, 0.20, 0.85, 
-
-      -0.5, 0.3,  0.1, 0.20, 0.85, 
-      -0.58, 0.31,  0.1, 0.20, 0.85, 
-      -0.55, 0.29,  0.1, 0.20, 0.85, 
-
-      -0.58, 0.31,  0.1, 0.20, 0.85, 
-      -0.55, 0.29,  0.1, 0.20, 0.85, 
-      -0.65, 0.29,  0.1, 0.20, 0.85, 
-
-      -0.55, 0.29,  0.1, 0.20, 0.85, 
-      -0.65, 0.29,  0.1, 0.20, 0.85, 
-      -0.6, 0.28,  0.1, 0.20, 0.85, 
-
-      -0.65, 0.29,  0.1, 0.20, 0.85, 
-      -0.6, 0.28,  0.1, 0.20, 0.85, 
-      -0.72, 0.25,  0.1, 0.20, 0.85, 
-
-      -0.6, 0.28,  0.1, 0.20, 0.85, 
-      -0.72, 0.25,  0.1, 0.20, 0.85, 
-      -0.69, 0.24,  0.1, 0.20, 0.85, 
-
-      -0.72, 0.25,  0.1, 0.20, 0.85, 
-      -0.69, 0.24,  0.1, 0.20, 0.85, //D2
-      -0.8, 0.2,  0.1, 0.20, 0.85, //B.
-
-      -0.69, 0.24,  0.1, 0.20, 0.85, //D2
-      -0.8, 0.2,  0.1, 0.20, 0.85, //B.
-      -0.74, 0.2,  0.1, 0.20, 0.85, //F2
-      
-    //lengkung bawah
+    uniform vec3 theta;
+    uniform mat4 u_matrix;
+    void main() {
+        // Compute the sines and cosines of theta for each of
+        //   the three axes in one computation.
+        vec3 angles = radians( theta );
+        vec3 c = cos( angles );
+        vec3 s = sin( angles );
     
-      -0.8, 0.2,  0.1, 0.20, 0.85, //B
-      -0.74, 0.2,  0.1, 0.20, 0.85, //F2
-      -0.72, 0.15,  0.1, 0.20, 0.85, //K.
-
-      -0.74, 0.2,  0.1, 0.20, 0.85, //F2
-      -0.72, 0.15,  0.1, 0.20, 0.85, //K.
-      -0.66, 0.16,  0.1, 0.20, 0.85, //J2
-
-      -0.72, 0.15,  0.1, 0.20, 0.85, //K
-      -0.66, 0.16,  0.1, 0.20, 0.85, //J2
-      -0.65, 0.11,  0.1, 0.20, 0.85, //M.
-
-      -0.66, 0.16,  0.1, 0.20, 0.85, //J2
-      -0.65, 0.11,  0.1, 0.20, 0.85, //M.
-      -0.57, 0.13,  0.1, 0.20, 0.85, //H2
-
-      -0.65, 0.11,  0.1, 0.20, 0.85, //M
-      -0.57, 0.13,  0.1, 0.20, 0.85, //H2
-      -0.58, 0.09,  0.1, 0.20, 0.85, //N.
-
-      -0.57, 0.13,  0.1, 0.20, 0.85, //H2
-      -0.58, 0.09,  0.1, 0.20, 0.85, //N.
-      -0.5, 0.12,  0.1, 0.20, 0.85, //A2
-
-      -0.58, 0.09,  0.1, 0.20, 0.85, //N.
-      -0.5, 0.12,  0.1, 0.20, 0.85, //A2
-      -0.5, 0.08, 0.1, 0.20, 0.85, //P.
-
-      -0.5, 0.12,  0.1, 0.20, 0.85, //A2
-      -0.5, 0.08,  0.1, 0.20, 0.85, //P.
-      -0.43, 0.13,  0.1, 0.20, 0.85, //I2
-
-      -0.5, 0.08,  0.1, 0.20, 0.85, //P.
-      -0.43, 0.13,  0.1, 0.20, 0.85, //I2
-      -0.42, 0.09,  0.1, 0.20, 0.85, //O.
-
-      -0.43, 0.13,  0.1, 0.20, 0.85, //I2
-      -0.42, 0.09,  0.1, 0.20, 0.85, //O.
-      -0.36, 0.15,  0.1, 0.20, 0.85, //K2
-
-      -0.42, 0.09,  0.1, 0.20, 0.85, //O.
-      -0.36, 0.15,  0.1, 0.20, 0.85, //K2
-      -0.35, 0.11,  0.1, 0.20, 0.85, //L.
-
-      -0.36, 0.15,  0.1, 0.20, 0.85, //K2
-      -0.35, 0.11,  0.1, 0.20, 0.85, //L.
-      -0.31, 0.18,  0.1, 0.20, 0.85, //M2
-
-      -0.35, 0.11,  0.1, 0.20, 0.85, //L.
-      -0.31, 0.18,  0.1, 0.20, 0.85, //M2
-      -0.28, 0.15,  0.1, 0.20, 0.85, //J.
-
-      -0.31, 0.18,  0.1, 0.20, 0.85, //M2
-      -0.28, 0.15,  0.1, 0.20, 0.85, //J.
-      -0.26, 0.2,  0.1, 0.20, 0.85, //E2
-
-      -0.28, 0.15,  0.1, 0.20, 0.85, //J.
-      -0.26, 0.2,  0.1, 0.20, 0.85, //E2
-      -0.20, 0.20,  0.1, 0.20, 0.85, //A .
-      
-        // diatas pembatas (Badan)
-      -0.20, 0.20,  0.5, 0.5, 0.5, //A +
-      -0.28, 0.15,  1.0, 1.0, 1.0, //J +
-      -0.20, -0.25,  1.0, 1.0, 1.0, //S . -
-
-      -0.28, 0.15,  1.0, 1.0, 1.0, //J
-      -0.20, -0.25,  1.0, 1.0, 1.0, //S  .-
-      -0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-
-      -0.28, 0.15,  1.0, 1.0, 1.0, //J
-      -0.35, 0.11,  1.0, 1.0, 1.0, //L
-      -0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-
-      -0.35, 0.11,  1.0, 1.0, 1.0, //L
-      -0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-      -0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-
-      -0.35, 0.11,  1.0, 1.0, 1.0, //L
-      -0.42, 0.09,  1.0, 1.0, 1.0, //O
-      -0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-
-      -0.42, 0.09,  1.0, 0.0, 0.0, //O
-      -0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-      -0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-
-      -0.42, 0.09,  1.0, 1.0, 1.0, //O
-      -0.5, 0.08,  0.0, 1.0, 0.0, //P
-      -0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-
-      -0.5, 0.08,  1.0, 1.0, 1.0, //P
-      -0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-      -0.5, -0.37,  1.0, 1.0, 1.0, //T.
-
-      -0.5, 0.08,  1.0, 1.0, 1.0, //P
-      -0.5, -0.37,  1.0, 1.0, 1.0, //T.
-      -0.58, 0.09,  1.0, 1.0, 1.0, //N
-
-      -0.5, -0.37,  1.0, 1.0, 1.0, //T.
-      -0.58, 0.09,  1.0, 1.0, 1.0, //N
-      -0.58, -0.36,  1.0, 1.0, 1.0, //C1 .
-
-      -0.58, 0.09,  1.0, 1.0, 1.0, //N
-      -0.58, -0.36,  1.0, 1.0, 1.0, //C1 .
-      -0.65, 0.11,  1.0, 1.0, 1.0, //M
-
-      -0.58, -0.36,  1.0, 1.0, 1.0, //C1. 
-      -0.65, 0.11,  1.0, 1.0, 1.0, //M
-      -0.65, -0.34,  1.0, 1.0, 1.0, //A1 .
-
-      -0.65, 0.11,  1.0, 0.0, 0.0, //M
-      -0.65, -0.34,  1.0, 1.0, 1.0, //A1 .
-      -0.72, 0.15,  1.0, 1.0, 1.0, //K
-
-      -0.65, -0.34,  1.0, 1.0, 1.0, //A1 .
-      -0.72, 0.15,  1.0, 1.0, 1.0, //K
-      -0.72, -0.3,  0.0, 1.0, 0.0, //W .
-
-      -0.72, 0.15,  1.0, 1.0, 1.0, //K
-      -0.72, -0.3,  1.0, 1.0, 1.0, //W .
-      -0.8, 0.2,  1.0, 1.0, 1.0, //B
-
-      -0.72, -0.3,  1.0, 1.0, 1.0, //W .
-      -0.8, 0.2,  1.0, 1.0, 1.0, //B
-      -0.8, -0.25,  0.5, 0.5, 0.5, //U .
-
-      // PEMISAH
-      -0.20, -0.25,  0.5, 0.5, 0.5, //S  +
-        -0.28, -0.3, 0.5, 0.5, 0.5,//V
-        -0.20, -0.3,  0.5, 0.5, 0.5, //D1
-  
-        -0.28,- 0.3, 0.5, 0.5, 0.5,//V
-        -0.20, -0.3,  0.5, 0.5, 0.5, //D1
-        -0.28, -0.35,  0.5, 0.5, 0.5, //E1
-  
-        -0.28, -0.3, 0.5, 0.5, 0.5,//V
-        -0.28, -0.35,  0.5, 0.5, 0.5, //E1
-        -0.35, -0.34,  0.5, 0.5, 0.5,//Z   
-  
-        -0.28, -0.35,  0.5, 0.5, 0.5, //E1
-        -0.35, -0.34,  0.5, 0.5, 0.5,//Z
-        -0.35, -0.39,  0.5, 0.5, 0.5, //F1
-  
-        -0.35, -0.34,  0.5, 0.5, 0.5,//Z
-        -0.35, -0.39,  0.5, 0.5, 0.5, //F1
-        -0.42, -0.36,  0.5, 0.5, 0.5, //B1
-  
-        -0.35, -0.39,  0.5, 0.5, 0.5, //F1
-        -0.42, -0.36,  0.5, 0.5, 0.5, //B1
-        -0.42, -0.41,  0.5, 0.5, 0.5, //G1
-  
-        -0.42, -0.36,  0.5, 0.5, 0.5, //B1
-        -0.42, -0.41,  0.5, 0.5, 0.5, //G1
-        -0.5, -0.37,  0.5, 0.5, 0.5, //T
-  
-        -0.42, -0.41,  0.5, 0.5, 0.5, //G1
-        -0.5, -0.37,  0.5, 0.5, 0.5, //T
-        -0.5, -0.42,  0.5, 0.5, 0.5, //H1
-  
-        -0.5, -0.37,  0.5, 0.5, 0.5, //T
-        -0.5, -0.42,  0.5, 0.5, 0.5, //H1
-        -0.58, -0.36,  0.5, 0.5, 0.5, //C1
-  
-        -0.5, -0.42,  0.5, 0.5, 0.5, //H1
-        -0.58, -0.36,  0.5, 0.5, 0.5, //C1
-        -0.58, -0.41,  0.5, 0.5, 0.5, //I1
-  
-        -0.58, -0.36,  0.5, 0.5, 0.5, //C1
-        -0.58, -0.41,  0.5, 0.5, 0.5, //I1
-        -0.65, -0.34,  0.5, 0.5, 0.5, //A1
-  
-        -0.58, -0.41,  0.5, 0.5, 0.5, //I1
-        -0.65, -0.34,  0.5, 0.5, 0.5, //A1
-        -0.62, -0.39,  0.5, 0.5, 0.5, //J1
-  
-        -0.65, -0.34,  0.5, 0.5, 0.5, //A1
-        -0.62, -0.39,  0.5, 0.5, 0.5, //J1
-        -0.72, -0.3,  0.5, 0.5, 0.5, //W
-  
-        -0.62, -0.39,  0.5, 0.5, 0.5, //J1
-        -0.72, -0.3,  0.5, 0.5, 0.5, //W
-        -0.72, -0.35,  0.5, 0.5, 0.5, //K1
-  
-        -0.72, -0.3,  0.5, 0.5, 0.5, //W
-        -0.72, -0.35,  0.5, 0.5, 0.5, //K1
-        -0.8, -0.25,  0.5, 0.5, 0.5, //U
-  
-        -0.72, -0.35,  0.5, 0.5, 0.5, //K1
-        -0.8, -0.25,  0.5, 0.5, 0.5, //U
-        -0.8, -0.3,  0.5, 0.5, 0.5, //L1
-
-      // BADAN BOTOL
-
-      
-  ];
-
-  var vertices_right = [
-      // TUTUP ATAS 
-      
-
-      
-        //lengkung atas
-        0.20, 0.20,  0.1, 0.20, 0.85, //A
-        0.28, 0.25,  0.1, 0.20, 0.85, //D
-        0.26, 0.20,  0.1, 0.20, 0.85, //E2
-  
-        0.28, 0.25,  0.1, 0.20, 0.85, //D
-        0.26, 0.20,  0.1, 0.20, 0.85, //E2
-        0.31, 0.24,  0.1, 0.20, 0.85, //C2
-  
-        0.28, 0.25,  0.1, 0.20, 0.85, //D
-        0.31, 0.24,  0.1, 0.20, 0.85, //C2
-        0.35, 0.29,  0.1, 0.20, 0.85, //E
-  
-        0.31, 0.24,  0.1, 0.20, 0.85, //C2
-        0.35, 0.29,  0.1, 0.20, 0.85, //E
-        0.4, 0.28,  0.1 ,0.20, 0.85, //W1
-  
-        0.35, 0.29,  0.1, 0.20, 0.85, //E
-        0.4, 0.28,  0.1, 0.20, 0.85, //W1
-        0.42, 0.31,  0.1, 0.20, 0.85, //F
-  
-        0.4, 0.28,  0.1, 0.20, 0.85, //W1
-        0.42, 0.31,  0.1, 0.20, 0.85, //F
-        0.45, 0.29,  0.1, 0.20, 0.85, //U1
-  
-        0.42, 0.31,  0.1, 0.20, 0.85, //F
-        0.45, 0.29,  0.1, 0.20, 0.85, //U1
-        0.5, 0.32,  0.1, 0.20, 0.85, //C
-  
-        0.45, 0.29,  0.1, 0.20, 0.85, //U1
-        0.5, 0.32,  0.1, 0.20, 0.85, //C
-        0.5, 0.3,  0.1, 0.20, 0.85, //T1
-  
-        0.5, 0.32,  0.1, 0.20, 0.85, //C
-        0.5, 0.3,  0.1, 0.20, 0.85, //T1
-        0.58, 0.31,  0.1, 0.20, 0.85, //G
-  
-        0.5, 0.3,  0.1, 0.20, 0.85, //T1
-        0.58, 0.31,  0.1, 0.20, 0.85, //G
-        0.55, 0.29,  0.1, 0.20, 0.85, //V1
-  
-        0.58, 0.31,  0.1, 0.20, 0.85, //G
-        0.55, 0.29,  0.1, 0.20, 0.85, //V1
-        0.65, 0.29,  0.1, 0.20, 0.85, //H
-  
-        0.55, 0.29,  0.1, 0.20, 0.85, //V1
-        0.65, 0.29,  0.1, 0.20, 0.85, //H
-        0.6, 0.28,  0.1, 0.20, 0.85, //Z1
-  
-        0.65, 0.29,  0.1, 0.20, 0.85, //H
-        0.6, 0.28,  0.1, 0.20, 0.85, //Z1
-        0.72, 0.25,  0.1, 0.20, 0.85, //I
-  
-        0.6, 0.28,  0.1, 0.20, 0.85, //Z1
-        0.72, 0.25,  0.1, 0.20, 0.85, //I
-        0.69, 0.24,  0.1, 0.20, 0.85, //D2
-  
-        0.72, 0.25,  0.1, 0.20, 0.85, //I
-        0.69, 0.24,  0.1, 0.20, 0.85, //D2
-        0.8, 0.2,  0.1, 0.20, 0.85, //B.
-  
-        0.69, 0.24,  0.1, 0.20, 0.85, //D2
-        0.8, 0.2,  0.1, 0.20, 0.85, //B.
-        0.74, 0.2,  0.1, 0.20, 0.85, //F2
-
-      //lengkung bawah
-        0.8, 0.2,  0.1, 0.20, 0.85, //B
-        0.74, 0.2,  0.1, 0.20, 0.85, //F2
-        0.72, 0.15,  0.1, 0.20, 0.85, //K.
-  
-        0.74, 0.2,  0.1, 0.20, 0.85, //F2
-        0.72, 0.15,  0.1, 0.20, 0.85, //K.
-        0.66, 0.16,  0.1, 0.20, 0.85, //J2
-  
-        0.72, 0.15,  0.1, 0.20, 0.85, //K
-        0.66, 0.16,  0.1, 0.20, 0.85, //J2
-        0.65, 0.11,  0.1, 0.20, 0.85, //M.
-  
-        0.66, 0.16,  0.1, 0.20, 0.85, //J2
-        0.65, 0.11,  0.1, 0.20, 0.85, //M.
-        0.57, 0.13,  0.1, 0.20, 0.85, //H2
-  
-        0.65, 0.11,  0.1, 0.20, 0.85, //M
-        0.57, 0.13,  0.1, 0.20, 0.85, //H2
-        0.58, 0.09,  0.1, 0.20, 0.85, //N.
-  
-        0.57, 0.13,  0.1, 0.20, 0.85, //H2
-        0.58, 0.09,  0.1, 0.20, 0.85, //N.
-        0.5, 0.12,  0.1, 0.20, 0.85, //A2
-  
-        0.58, 0.09,  0.1, 0.20, 0.85, //N.
-        0.5, 0.12,  0.1, 0.20, 0.85, //A2
-        0.5, 0.08, 0.1, 0.20, 0.85, //P.
-  
-        0.5, 0.12,  0.1, 0.20, 0.85, //A2
-        0.5, 0.08,  0.1, 0.20, 0.85, //P.
-        0.43, 0.13,  0.1, 0.20, 0.85, //I2
-  
-        0.5, 0.08,  0.1, 0.20, 0.85, //P.
-        0.43, 0.13,  0.1, 0.20, 0.85, //I2
-        0.42, 0.09,  0.1, 0.20, 0.85, //O.
-  
-        0.43, 0.13,  0.1, 0.20, 0.85, //I2
-        0.42, 0.09,  0.1, 0.20, 0.85, //O.
-        0.36, 0.15,  0.1, 0.20, 0.85, //K2
-  
-        0.42, 0.09,  0.1, 0.20, 0.85, //O.
-        0.36, 0.15,  0.1, 0.20, 0.85, //K2
-        0.35, 0.11,  0.1, 0.20, 0.85, //L.
-  
-        0.36, 0.15,  0.1, 0.20, 0.85, //K2
-        0.35, 0.11,  0.1, 0.20, 0.85, //L.
-        0.31, 0.18,  0.1, 0.20, 0.85, //M2
-  
-        0.35, 0.11,  0.1, 0.20, 0.85, //L.
-        0.31, 0.18,  0.1, 0.20, 0.85, //M2
-        0.28, 0.15,  0.1, 0.20, 0.85, //J.
-  
-        0.31, 0.18,  0.1, 0.20, 0.85, //M2
-        0.28, 0.15,  0.1, 0.20, 0.85, //J.
-        0.26, 0.2,  0.1, 0.20, 0.85, //E2
-  
-        0.28, 0.15,  0.1, 0.20, 0.85, //J.
-        0.26, 0.2,  0.1, 0.20, 0.85, //E2
-        0.20, 0.20,  0.1, 0.20, 0.85, //A .
-        
-          // (Badan)
-        0.20, 0.20,  0.5, 0.5, 0.5, //A +
-        0.28, 0.15,  1.0, 1.0, 1.0, //J +
-        0.20, -0.25,  1.0, 1.0, 1.0, //S . -
-  
-        0.28, 0.15,  1.0, 1.0, 1.0, //J
-        0.20, -0.25,  1.0, 1.0, 1.0, //S  .-
-        0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-  
-        0.28, 0.15,  1.0, 1.0, 1.0, //J
-        0.35, 0.11,  1.0, 1.0, 1.0, //L
-        0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-  
-        0.35, 0.11,  1.0, 1.0, 1.0, //L
-        0.28,- 0.3,  1.0, 1.0, 1.0,//V .
-        0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-  
-        0.35, 0.11,  1.0, 1.0, 1.0, //L
-        0.42, 0.09,  1.0, 1.0, 1.0, //O
-        0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-  
-        0.42, 0.09,  1.0, 0.0, 0.0, //O
-        0.35, -0.34,  1.0, 1.0, 1.0,//Z .
-        0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-  
-        0.42, 0.09,  1.0, 1.0, 1.0, //O
-        0.5, 0.08,  0.0, 1.0, 0.0, //P
-        0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-  
-        0.5, 0.08,  1.0, 1.0, 1.0, //P
-        0.42, -0.36,  1.0, 1.0, 1.0, //B1.
-        0.5, -0.37,  1.0, 1.0, 1.0, //T.
-  
-        0.5, 0.08,  1.0, 1.0, 1.0, //P
-        0.5, -0.37,  1.0, 1.0, 1.0, //T.
-        0.58, 0.09,  1.0, 1.0, 1.0, //N
-  
-        0.5, -0.37,  1.0, 1.0, 1.0, //T.
-        0.58, 0.09,  1.0, 1.0, 1.0, //N
-        0.58, -0.36,  1.0, 1.0, 1.0, //C1 .
-  
-        0.58, 0.09,  1.0, 1.0, 1.0, //N
-        0.58, -0.36,  1.0, 1.0, 1.0, //C1 .
-        0.65, 0.11,  1.0, 1.0, 1.0, //M
-  
-        0.58, -0.36,  1.0, 1.0, 1.0, //C1. 
-        0.65, 0.11,  1.0, 1.0, 1.0, //M
-        0.65, -0.34,  1.0, 1.0, 1.0, //A1 .
-  
-        0.65, 0.11,  1.0, 0.0, 0.0, 
-        0.65, -0.34,  1.0, 1.0, 1.0, 
-        0.72, 0.15,  1.0, 1.0, 1.0, 
-
-        0.65, -0.34,  1.0, 1.0, 1.0, 
-        0.72, 0.15,  1.0, 1.0, 1.0, 
-        0.72, -0.3,  0.0, 1.0, 0.0, 
-  
-        0.72, 0.15,  1.0, 1.0, 1.0, 
-        0.72, -0.3,  1.0, 1.0, 1.0, 
-        0.8, 0.2,  1.0, 1.0, 1.0, 
-  
-        0.72, -0.3,  1.0, 1.0, 1.0, 
-        0.8, 0.2,  1.0, 1.0, 1.0, 
-        0.8, -0.25,  1.0, 1.0, 1.0, 
-  
-        // bawah
-        0.20, -0.25,  0.5, 0.5, 0.5, 
-          0.28, -0.3, 0.5, 0.5, 0.5,
-          0.20, -0.3,  0.5, 0.5, 0.5, 
+        // Remeber: thse matrices are column-major
+        mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+                        0.0,  c.x,  s.x, 0.0,
+                        0.0, -s.x,  c.x, 0.0,
+                        0.0,  0.0,  0.0, 1.0 );
     
-          0.28,- 0.3, 0.5, 0.5, 0.5,
-          0.20, -0.3,  0.5, 0.5, 0.5, 
-          0.28, -0.35,  0.5, 0.5, 0.5, 
-          0.28, -0.3, 0.5, 0.5, 0.5,
-          0.28, -0.35,  0.5, 0.5, 0.5, 
-          0.35, -0.34,  0.5, 0.5, 0.5, 
+        mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
+                        0.0, 1.0,  0.0, 0.0,
+                        s.y, 0.0,  c.y, 0.0,
+                        0.0, 0.0,  0.0, 1.0 );
     
-          0.28, -0.35,  0.5, 0.5, 0.5, 
-          0.35, -0.34,  0.5, 0.5, 0.5,
-          0.35, -0.39,  0.5, 0.5, 0.5, 
     
-          0.35, -0.34,  0.5, 0.5, 0.5,
-          0.35, -0.39,  0.5, 0.5, 0.5, 
-          0.42, -0.36,  0.5, 0.5, 0.5, 
+        mat4 rz = mat4( c.z, -s.z, 0.0, 0.0,
+                        s.z,  c.z, 0.0, 0.0,
+                        0.0,  0.0, 1.0, 0.0,
+                        0.0,  0.0, 0.0, 1.0 );
+        float scale = 0.5;
+        mat4 dilationMatrix = mat4(
+            scale, 0., 0., 0.,
+            0., scale, 0., 0.,
+            0., 0., scale, 0.,
+            0., 0., 0., 1.
+        );
+
+        fColor = vColor;
+        gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
+     } 
+    `;
+
+    var fragmentShaderSource = `
+        precision mediump float;
+        varying vec4 fColor;
+
+        void main() {
+            gl_FragColor = fColor;
+        }
+    `;
     
-          0.35, -0.39,  0.5, 0.5, 0.5, 
-          0.42, -0.36,  0.5, 0.5, 0.5, 
-          0.42, -0.41,  0.5, 0.5, 0.5, 
+    // Create .c in GPU
+    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderSource);
+    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderSource);
+
+    // Compile .c into .o
+    gl.compileShader(vertexShader);
+    gl.compileShader(fragmentShader);
+
+    // Prepare a .exe shell (shader program)
+    var shaderProgram = gl.createProgram();
+
+    // Put the two .o files into the shell
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+
+    // Link the two .o files, so together they can be a runnable program/context.
+    gl.linkProgram(shaderProgram);
+
+    // Start using the context (analogy: start using the paints and the brushes)
+     gl.useProgram(shaderProgram);
+
+    // Teach the computer how to collect
+    // the positional values from ARRAY_BUFFER
+    // to each vertex being processed
+    var vColor = gl.getAttribLocation( shaderProgram, "vColor" );
+    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vColor );
     
-          0.42, -0.36,  0.5, 0.5, 0.5, 
-          0.42, -0.41,  0.5, 0.5, 0.5, 
-          0.5, -0.37,  0.5, 0.5, 0.5, 
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
     
-          0.42, -0.41,  0.5, 0.5, 0.5, 
-          0.5, -0.37,  0.5, 0.5, 0.5, 
-          0.5, -0.42,  0.5, 0.5, 0.5, 
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+    var vPosition = gl.getAttribLocation( shaderProgram, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition );
+
+    thetaLoc = gl.getUniformLocation(shaderProgram, "theta"); 
+    gl.clearColor( 0.2, 0.2, 0.2, 1.0 );
     
-          0.5, -0.37,  0.5, 0.5, 0.5, 
-          0.5, -0.42,  0.5, 0.5, 0.5, 
-          0.58, -0.36,  0.5, 0.5, 0.5, 
-    
-          0.5, -0.42,  0.5, 0.5, 0.5, 
-          0.58, -0.36,  0.5, 0.5, 0.5, 
-          0.58, -0.41,  0.5, 0.5, 0.5, 
-    
-          0.58, -0.36,  0.5, 0.5, 0.5, 
-          0.58, -0.41,  0.5, 0.5, 0.5, 
-          0.65, -0.34,  0.5, 0.5, 0.5, 
-    
-          0.58, -0.41,  0.5, 0.5, 0.5, 
-          0.65, -0.34,  0.5, 0.5, 0.5, 
-          0.62, -0.39,  0.5, 0.5, 0.5, 
-    
-          0.65, -0.34,  0.5, 0.5, 0.5, 
-          0.62, -0.39,  0.5, 0.5, 0.5, 
-          0.72, -0.3,  0.5, 0.5, 0.5, 
-    
-          0.62, -0.39,  0.5, 0.5, 0.5, 
-          0.72, -0.3,  0.5, 0.5, 0.5, 
-          0.72, -0.35,  0.5, 0.5, 0.5, 
+    var speed = 0.0165; // nrp
+    var dy = 0;
 
-          0.72, -0.3,  0.5, 0.5, 0.5, 
-          0.72, -0.35,  0.5, 0.5, 0.5, 
-          0.8, -0.25,  0.5, 0.5, 0.5, 
-    
-          0.72, -0.35,  0.5, 0.5, 0.5, 
-          0.8, -0.25,  0.5, 0.5, 0.5, 
-          0.8, -0.3,  0.5, 0.5, 0.5, 
+    function render()
+    {
+        if (dy >= 0.75 || dy <= -0.55) speed = -speed;
+		dy += speed;
 
-  ];
+        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.useProgram(shaderProgram);
+        gl.uniform3fv(thetaLoc, theta);
+        const u_matrix = gl.getUniformLocation(shaderProgram, "u_matrix");
+        const leftObject = [1., 0., 0., 0.,
+                0., 1., 0., 0.,
+                0., 0., 1., 0.,
+                -1.2, 0, 0, 1.];
 
-  var vertices = [...vertices_left, ...vertices_right]; 
+        const rightObject = [1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            1.2, dy, 0, 1.];
 
-  var buffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        gl.uniformMatrix4fv(u_matrix, false, leftObject);
+        gl.drawArrays( gl.TRIANGLES, 0, len );
 
-  var vertexShaderSource = `
-      attribute vec2 aPosition;
-      attribute vec3 aColor;
-      varying  vec3 vColor;
-      uniform mat4 uTranslate;
-      void main(){
-          gl_Position = uTranslate * vec4(aPosition, 0.0, 1.0);
-          vColor = aColor;
-      }
-  `;
+        gl.uniform3fv(thetaLoc, theta2);
+        gl.uniformMatrix4fv(u_matrix, false, rightObject);
+        gl.drawArrays( gl.TRIANGLES, len, len );
+        requestAnimationFrame( render );
+    }
+    render();
+}
 
-  var fragmentShaderSource = `
-      precision mediump float;
-      varying vec3 vColor;
-      void main(){
-          gl_FragColor = vec4(vColor, 1.0);
-      }
-  `;
+function quad(a, b, c, d, points, colors, cyl_vertices) 
+{
+    // We need to parition the quad into two triangles in order for
+    // WebGL to be able to render it.  In this case, we create two
+    // triangles from the quad indices
 
-  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vertexShader, vertexShaderSource);
-  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fragmentShader,fragmentShaderSource);
+    //vertex color assigned by the index of the vertex
 
-  gl.compileShader(vertexShader);
-  gl.compileShader(fragmentShader);
+    var indices = [ a, b, c, a, c, d ];
+    var democolors = [ [1, 0, 0, 1], [0.8, 0.8, 0.8, 1], [0.5, 0.5, 0.5, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.9, 0.8, 1], [0.6, 0.6, 0.6, 1] ];
 
-  var shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-
-  gl.linkProgram(shaderProgram);
-  gl.useProgram(shaderProgram);
-
-  var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
-  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 0);
-  gl.enableVertexAttribArray(aPosition);
-
-  var aColor = gl.getAttribLocation(shaderProgram, "aColor");
-  gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 5*Float32Array.BYTES_PER_ELEMENT, 2*Float32Array.BYTES_PER_ELEMENT);
-  gl.enableVertexAttribArray(aColor);
-
-  var speed = 0.0165;// nrp 165
-  var dy = 0;
-  const uTranslate = gl.getUniformLocation(shaderProgram, 'uTranslate');
-  
-  function render() {
-      if (dy >= 0.64 || dy <= -0.6) speed = -speed;
-  dy += speed;
-      
-  const left = [
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0, 0.0, 0.0, 1.0,
-  ]
-  
-  const right = [
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0, dy, 0.0, 1.0,
-  ]
-  
-  gl.clearColor(0.5, 0.5, 0.5, 0.5);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-      gl.uniformMatrix4fv(uTranslate, false, left);
-      gl.drawArrays(gl.TRIANGLES, 0, vertices_left.length/5);
-
-  gl.uniformMatrix4fv(uTranslate, false, right);
-      gl.drawArrays(gl.TRIANGLES, vertices_left.length/5, vertices_right.length/5);
-          
-      requestAnimationFrame(render);
-  }
-  render();
+    for ( var i = 0; i < indices.length; ++i ) {
+        points.push( cyl_vertices[indices[i]] );
+        colors.push( democolors[i] );
+    }
 }
