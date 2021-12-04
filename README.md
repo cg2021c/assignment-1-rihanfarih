@@ -35,8 +35,8 @@
 # Task 3 
 Please continue your WebGL application on the same repository as the previous assignment (https://classroom.github.com/a/X2bMi7wC) with the following specifications: 
 
-* Create a 3D definition of the object being photographed in your very first assignment. []
-* Draw the object twice—on the left and on the right half of the canvas—with the two perspectives corresponding to the two photos selected in the previous assignment. []
+* Create a 3D definition of the object being photographed in your very first assignment. [v]
+* Draw the object twice—on the left and on the right half of the canvas—with the two perspectives corresponding to the two photos selected in the previous assignment. [v]
 * Add a little cube in the center of canvas, right between the two objects.[]
 * Set the cube to glow white and become a light source.[]
 * Add an ambient effect with an intensity of 0.abc to both objects, where the value of abc is the last three digits of your Student ID plus 200.[]
