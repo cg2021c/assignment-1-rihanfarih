@@ -41,8 +41,8 @@ Please continue your WebGL application on the same repository as the previous as
 - [x] Set the cube to glow white and become a light source.
 - [x] Add an ambient effect with an intensity of 0.abc to both objects, where the value of abc is the last three digits of your Student ID plus 200.
 - [x] Add a diffuse effect to both objects.
-- [ ] Add a plastic specular effect for the left object.
-- [ ] Add a metal specular effect for the object on the right.
+- [x] Add a plastic specular effect for the left object.
+- [x] Add a metal specular effect for the object on the right.
 - [x] Set the cube so that it can be moved upward with the W key-button and downward with the S key-button.
 - [x] Set the camera to move leftward and rightward linearly (not orbitally) using the A and D key-buttons.
 ## reference link for making this assignment
