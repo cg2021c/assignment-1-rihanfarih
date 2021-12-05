@@ -203,8 +203,8 @@ function main(){
             // Calculate the phong reflection effect
             if (cosTheta > 0.) {
                 diffuse = uDiffuseConstant * cosTheta;
-              //  specular = uSpecularConstant * pow(cosPhi, uShininessConstant);
-                specular = uSpecularConstant * pow(cosTheta, ushininessConstant);
+                specular = uSpecularConstant * pow(cosPhi, uShininessConstant);
+              //  specular = uSpecularConstant * pow(cosTheta, ushininessConstant);
             }
             
 
@@ -213,7 +213,7 @@ function main(){
             // Apply the shading
             vec3 resColor = vec3(fColor);
             gl_FragColor = vec4(resColor * phong, 1.);
-           // gl_FragColor = fColor;
+           
         }
     `;
     
