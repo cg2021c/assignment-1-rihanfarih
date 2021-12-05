@@ -44,11 +44,10 @@ Please continue your WebGL application on the same repository as the previous as
 - [ ] Add a plastic specular effect for the left object.
 - [ ] Add a metal specular effect for the object on the right.
 - [x] Set the cube so that it can be moved upward with the W key-button and downward with the S key-button.
-- [ ] Set the camera to move leftward and rightward linearly (not orbitally) using the A and D key-buttons.
-## reference link for making cylinder
-https://cse.taylor.edu/~jdenning/classes/cos350/slides/08_Cylinders.html
+- [x] Set the camera to move leftward and rightward linearly (not orbitally) using the A and D key-buttons.
+## reference link for making this assignment
+https://cse.taylor.edu/~jdenning/classes/cos350/slides/08_Cylinders.html (for making cylinder and base code)
 
-https://www.cs.unm.edu/~ANGEL/WebGL/CODE/GEOMETRY/cylinderTest.js
 
-https://github.com/cg2021c/learn-webgl-hadziq
+https://github.com/cg2021c/learn-webgl-hadziq (for lighting , moving , etc...)
 
