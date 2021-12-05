@@ -110,13 +110,11 @@ function main(){
     attribute  vec4 vPosition;
     attribute  vec4 vColor;
     attribute  vec3 vNormal;
-
     varying vec4 fColor;
     varying vec3 fNormal;
     
     uniform vec3 theta;
     uniform mat4 u_matrix;
-    uniform mat4 uView;
     void main() {
         // Compute the sines and cosines of theta for each of
         //   the three axes in one computation.
@@ -147,10 +145,9 @@ function main(){
             0., 0., scale, 0.,
             0., 0., 0., 1.
         );
-
         fColor = vColor;
         fNormal = vNormal;
-        gl_Position = dilationMatrix * rz * ry * rx * uView * u_matrix * vPosition;
+        gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
      } 
     `;
 
@@ -158,11 +155,13 @@ function main(){
         precision mediump float;
         varying vec4 fColor;
         varying vec3 fNormal;
-
         uniform vec3 uAmbientConstant;   
         uniform float uAmbientIntensity;
         uniform vec3 uDiffuseConstant;  // Represents the light color
         uniform vec3 uLight;
+        uniform vec3 uSpecularConstant; // Represents the light color
+        uniform vec3 uViewerPosition;
+
 
         void main() {
             // Calculate the ambient effect
@@ -172,9 +171,14 @@ function main(){
             vec3 normalizedNormal = normalize(fNormal);
             vec3 normalizedLight = normalize(uLight);
             vec3 diffuse = uDiffuseConstant * max(dot(normalizedNormal, normalizedLight), 0.0);
-            vec3 phong = ambient + diffuse; // + specular;
-            // Apply the shading
+            vec3 reflector = 2.0 * dot(normalizedNormal, normalizedLight) * (uNormalModel * vNormal) - (uLightPosition - vPosition);
+            vec3 normalizedViewer = normalize(uViewerPosition - vPosition);
+            vec3 normalizedReflector = normalize(reflector);
+            float shininessConstant = 7.0;
+            vec3 specular = uSpecularConstant * pow(dot(normalizedViewer, normalizedReflector), shininessConstant);
+            vec3 phong = ambient + diffuse + specular;
 
+            // Apply the shading
             vec3 resColor = vec3(fColor);
             gl_FragColor = vec4(resColor * phong, 1.);
            // gl_FragColor = fColor;
@@ -203,7 +207,7 @@ function main(){
     gl.linkProgram(shaderProgram);
 
     // Start using the context (analogy: start using the paints and the brushes)
-     gl.useProgram(shaderProgram);
+  //   gl.useProgram(shaderProgram);
 
     // Teach the computer how to collect
     // the positional values from ARRAY_BUFFER
@@ -234,44 +238,32 @@ function main(){
     // DIFFUSE
     var uDiffuseConstant = gl.getUniformLocation(shaderProgram, "uDiffuseConstant");
     var uLight = gl.getUniformLocation(shaderProgram, "uLight");
+
+    // SPECULAR
+    var uSpecularConstant = gl.getUniformLocation(shaderProgram, "uSpecularConstant");
+    var uViewerPosition = gl.getUniformLocation(shaderProgram, "uViewerPosition");
+    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
+    gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
   
 
 
     var speed = 0.0165; // nrp
     var dy = 0;
-    var cameraX = 0.0;
-    var cameraY = 0.0
-    var cameraZ = 0.0;
     
     // Interactive graphics with keyboard
     var changeY = 0;
 
-    var uView = gl.getUniformLocation(shaderProgram, "uView");
-    var viewMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.lookAt(
-        viewMatrix,
-        [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
-        [cameraX, 0.0, 0.0],        // the point where the camera look at
-        [0.0, 1.0, 0.0]
-    );
+    var cameraX = 0.0;
+    var cameraY = 2.0
+    var cameraZ = 5.0;
 
     function onKeydown(event) {
         if (event.keyCode == 87 && changeY<2) changeY += 0.165; // Up
-        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // Down
-        if (event.keyCode == 65 && cameraX>-0.3) cameraX -= 0.165; // Left
-        if (event.keyCode == 68 && cameraX<0.3) cameraX += 0.165; // Right
-        glMatrix.mat4.lookAt(
-            viewMatrix,
-            [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
-            [cameraX, 0.0, -10],        // the point where the camera look at
-            [0.0, 1.0, 0.0]
-        );
-        console.log(cameraX, cameraY, cameraZ);
-        gl.uniformMatrix4fv(uView, false, viewMatrix);
+        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // down
+        console.log(changeY);
     }
 
-   // document.addEventListener("keyup", onKeydown);
-   document.addEventListener("keydown", onKeydown);
+    document.addEventListener("keyup", onKeydown);
     /*
             var freeze = false;
             function onKeydown(event) {
@@ -282,7 +274,6 @@ function main(){
         }
         document.addEventListener("keydown", onKeydown);
         document.addEventListener("keyup", onKeyup);
-
         var speedRaw = 1;
         var speed = speedRaw / 600;
         var change = 0;
@@ -333,7 +324,9 @@ function main(){
                    
                    gl.uniform3fv(uDiffuseConstant, [1.0, 1.0, 1.0]);   // white light
                
-                   gl.uniform3fv(uLight, [-1.2, 0.0 - changeY, 0.0]);  // directional light from the left
+                  // gl.uniform3fv(uLight, [-1.2, 0.0 - changeY, 0.0]);  // directional light from the left
+                   gl.uniform3fv(uLightPosition, [-1.5, 1.5, 0.0]);    // light position
+
                    gl.uniform3fv(thetaLoc, theta2);
                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
