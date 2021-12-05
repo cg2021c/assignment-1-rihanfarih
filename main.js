@@ -199,9 +199,29 @@ function main(){
     
     var speed = 0.0165; // nrp
     var dy = 0;
+    
+    // Interactive graphics with keyboard
+    var changeY = 0;
+
+    function onKeydown(event) {
+        if (event.keyCode == 32) freeze = true;
+    }
+    function onKeyup(event) {
+        if (event.keyCode == 32) freeze = false;
+    }
+    document.addEventListener("keydown", onKeydown);
+    document.addEventListener("keyup", onKeyup);
+
 
     function render()
     {
+
+            if (!freeze) {  // If it is not freezing, then animate the rectangle
+                if (change >= 0.5 || change <= -0.5) speed = -speed;
+                change = change + speed;
+                gl.uniform1f(uChange, change);
+            }
+
         if (dy >= 0.75 || dy <= -0.55) speed = -speed;
 		dy += speed;
 
@@ -222,7 +242,7 @@ function main(){
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                0, 0, 0, 1.];
+                0, changeY, 0, 1.];
                 //add ambient light
                 gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); 
                 gl.uniform1f(uAmbientIntensity, 0.365); // 200+165
@@ -288,14 +308,14 @@ function square(a, b, c, d)
     ];
 
     var vertexColors = [
-        [ 1, 1, 1, 1.0 ],  // orange
-		[ 1, 1, 1, 1.0 ],  // cyan
-        [ 1, 1, 1, 1.0 ],  // red
-        [ 1, 1, 1, 1.0 ],  // yellow
-        [ 1, 1, 1, 1.0 ],  // green
-		[ 1, 1, 1, 1.0 ],  // magenta
-        [ 1, 1, 1, 1.0 ],  // blue
-        [ 1, 1, 1, 1.0 ],   // white
+        [ 1, 1, 1, 1.0 ],  
+		[ 1, 1, 1, 1.0 ],  
+        [ 1, 1, 1, 1.0 ],  
+        [ 1, 1, 1, 1.0 ],  
+        [ 1, 1, 1, 1.0 ],  
+		[ 1, 1, 1, 1.0 ],  
+        [ 1, 1, 1, 1.0 ],  
+        [ 1, 1, 1, 1.0 ],   
 
     ];
 
