@@ -110,6 +110,7 @@ function main(){
     attribute  vec4 vPosition;
     attribute  vec4 vColor;
     attribute  vec3 vNormal;
+    varying vec3 vPositionDiffuse;
     varying vec4 fColor;
     varying vec3 fNormal;
     
@@ -148,35 +149,30 @@ function main(){
         fColor = vColor;
         fNormal = vNormal;
         gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
+        vPositionDiffuse = (u_matrix * vPosition).xyz;
      } 
     `;
 
     var fragmentShaderSource = `
         precision mediump float;
+        varying vec3 vPositionDiffuse;
         varying vec4 fColor;
         varying vec3 fNormal;
         uniform vec3 uAmbientConstant;   
         uniform float uAmbientIntensity;
         uniform vec3 uDiffuseConstant;  // Represents the light color
-        uniform vec3 uLight;
-        uniform vec3 uSpecularConstant; // Represents the light color
-        uniform vec3 uViewerPosition;
-
-
+        uniform vec3 uLightPosition;
+        uniform mat3 uNormalModel;
         void main() {
+
             // Calculate the ambient effect
             vec3 ambient = uAmbientConstant * uAmbientIntensity;
 
             // Calculate the diffuse effect
             vec3 normalizedNormal = normalize(fNormal);
-            vec3 normalizedLight = normalize(uLight);
+            vec3 normalizedLight = normalize(uLightPosition - vPositionDiffuse);
             vec3 diffuse = uDiffuseConstant * max(dot(normalizedNormal, normalizedLight), 0.0);
-            vec3 reflector = 2.0 * dot(normalizedNormal, normalizedLight) * (uNormalModel * vNormal) - (uLightPosition - vPosition);
-            vec3 normalizedViewer = normalize(uViewerPosition - vPosition);
-            vec3 normalizedReflector = normalize(reflector);
-            float shininessConstant = 7.0;
-            vec3 specular = uSpecularConstant * pow(dot(normalizedViewer, normalizedReflector), shininessConstant);
-            vec3 phong = ambient + diffuse + specular;
+            vec3 phong = ambient + diffuse; // + specular;
 
             // Apply the shading
             vec3 resColor = vec3(fColor);
@@ -237,13 +233,7 @@ function main(){
     
     // DIFFUSE
     var uDiffuseConstant = gl.getUniformLocation(shaderProgram, "uDiffuseConstant");
-    var uLight = gl.getUniformLocation(shaderProgram, "uLight");
-
-    // SPECULAR
-    var uSpecularConstant = gl.getUniformLocation(shaderProgram, "uSpecularConstant");
-    var uViewerPosition = gl.getUniformLocation(shaderProgram, "uViewerPosition");
-    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
-    gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
+    var uLightPosition = gl.getUniformLocation(shaderProgram, "uLightPosition");
   
 
 
@@ -252,10 +242,6 @@ function main(){
     
     // Interactive graphics with keyboard
     var changeY = 0;
-
-    var cameraX = 0.0;
-    var cameraY = 2.0
-    var cameraZ = 5.0;
 
     function onKeydown(event) {
         if (event.keyCode == 87 && changeY<2) changeY += 0.165; // Up
@@ -316,17 +302,15 @@ function main(){
                 // adapted from https://github.com/cg2021c/learn-webgl-hadziq (implement ambient commit)
                 gl.uniform3fv(uDiffuseConstant, [1.0, 1.0  , 1.0]);   // white light
     
-                   gl.uniform3fv(uLight, [1.2, 0.0 - changeY , 0.0]);  // directional light from the left
+                    gl.uniform3fv(uLightPosition, [6.0, 0.0, 0.0]); // light position
+                    gl.uniform3fv(thetaLoc, theta);
                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0 , 1.0]); // white light
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
                    gl.uniformMatrix4fv(u_matrix, false, leftObject);
                    gl.drawArrays( gl.TRIANGLES, 0, len );
                    
                    gl.uniform3fv(uDiffuseConstant, [1.0, 1.0, 1.0]);   // white light
-               
-                  // gl.uniform3fv(uLight, [-1.2, 0.0 - changeY, 0.0]);  // directional light from the left
-                   gl.uniform3fv(uLightPosition, [-1.5, 1.5, 0.0]);    // light position
-
+                   gl.uniform3fv(uLightPosition, [-5.0, 0.0, 0.0]); // light position
                    gl.uniform3fv(thetaLoc, theta2);
                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
