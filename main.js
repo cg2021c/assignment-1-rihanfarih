@@ -201,29 +201,40 @@ function main(){
     var dy = 0;
     
     // Interactive graphics with keyboard
-//    var changeY = 0;
-    var freeze = false;
+    var changeY = 0;
+
     function onKeydown(event) {
-        if (event.keyCode == 32) freeze = true;
+        if (event.keyCode == 87 && changeY<2) changeY += 0.165; // Up
+        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // down
+        console.log(changeY);
     }
-    function onKeyup(event) {
-        if (event.keyCode == 32) freeze = false;
-    }
-    document.addEventListener("keydown", onKeydown);
-    document.addEventListener("keyup", onKeyup);
 
-    var speedRaw = 1;
-    var speed = speedRaw / 600;
-    var change = 0;
+    document.addEventListener("keyup", onKeydown);
+    /*
+            var freeze = false;
+            function onKeydown(event) {
+            if (event.keyCode == 32) freeze = true;
+        }
+        function onKeyup(event) {
+            if (event.keyCode == 32) freeze = false;
+        }
+        document.addEventListener("keydown", onKeydown);
+        document.addEventListener("keyup", onKeyup);
 
+        var speedRaw = 1;
+        var speed = speedRaw / 600;
+        var change = 0;
+        var uChange = gl.getUniformLocation(shaderProgram, "uChange");
+    */
     function render()
     {
-
-            if (!freeze) {  // If it is not freezing, then animate the rectangle
+        /*
+                if (!freeze) {  // If it is not freezing, then animate the rectangle
                 if (change >= 0.5 || change <= -0.5) speed = -speed;
                 change = change + speed;
-             //  gl.uniform1f(uChange, change);
-                 }
+                gl.uniform1f(uChange, change);
+        }
+        */
 
         if (dy >= 0.75 || dy <= -0.55) speed = -speed;
 		dy += speed;
@@ -245,7 +256,7 @@ function main(){
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                0, change, 0, 1.];
+                0, changeY, 0, 1.];
                 //add ambient light
                 gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); 
                 gl.uniform1f(uAmbientIntensity, 0.365); // 200+165
