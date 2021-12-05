@@ -201,8 +201,8 @@ function main(){
     var dy = 0;
     
     // Interactive graphics with keyboard
-    var changeY = 0;
-
+//    var changeY = 0;
+    var freeze = false;
     function onKeydown(event) {
         if (event.keyCode == 32) freeze = true;
     }
@@ -212,6 +212,9 @@ function main(){
     document.addEventListener("keydown", onKeydown);
     document.addEventListener("keyup", onKeyup);
 
+    var speedRaw = 1;
+    var speed = speedRaw / 600;
+    var change = 0;
 
     function render()
     {
@@ -219,8 +222,8 @@ function main(){
             if (!freeze) {  // If it is not freezing, then animate the rectangle
                 if (change >= 0.5 || change <= -0.5) speed = -speed;
                 change = change + speed;
-                gl.uniform1f(uChange, change);
-            }
+             //  gl.uniform1f(uChange, change);
+                 }
 
         if (dy >= 0.75 || dy <= -0.55) speed = -speed;
 		dy += speed;
@@ -242,7 +245,7 @@ function main(){
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                0, changeY, 0, 1.];
+                0, change, 0, 1.];
                 //add ambient light
                 gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); 
                 gl.uniform1f(uAmbientIntensity, 0.365); // 200+165
