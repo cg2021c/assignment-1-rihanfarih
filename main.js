@@ -6,16 +6,21 @@ var NumSides = 12;
 // flattened points and colors to be sent to Vertex Shader
 var points = [];
 var colors = [];
+
 var points2 = [];
 var colors2 = [];
+
 var points3 = [];//kubus
 var colors3 = [];//kubus
 
+var normals = [];
+var normals2 = [];
+
 
 // rotation stuff
-var theta = [ 205, 0, 0 ];
-var theta2 = [ -165, 0, 0 ];
-var theta3 = [0, 0, 0]; //nambah kubus
+var theta = [ 165, 0, 0 ];
+var theta2 = [ 165, 5, 2 ];
+var theta3 = [20, 10, 0]; //nambah kubus
 
 var thetaLoc;   // rotation uniform
 var cyl_vertices, cyl_colors;
@@ -36,7 +41,7 @@ function main(){
     cyl_vertices = new Array(NumSides * 2);
     cyl_colors   = new Array(NumSides * 2);
 
-    alt_colors = [[1.0, 0.5, 0.5, 1.0], [0.5, 1.0, 0.5, 1.0], [0.5, 0.5, 1.0, 1.0]];
+   alt_colors = [[1.0, 0.5, 0.5, 1.0], [0.5, 1.0, 0.5, 1.0], [0.5, 0.5, 1.0, 1.0]];
    
     for(var i_side = 0; i_side < NumSides; i_side++) {
         x = 0.35 * Math.cos(angle);
@@ -52,9 +57,9 @@ function main(){
     }
 
     for(var i_side = 0; i_side < NumSides-1; i_side++) {
-        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points, colors,cyl_vertices);
+        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points, colors,cyl_vertices,normals);
     }
-    quad(0, NumSides-1, 2*NumSides-1, NumSides, points, colors,cyl_vertices);
+    quad(0, NumSides-1, 2*NumSides-1, NumSides, points, colors,cyl_vertices,normals);
 
     // Kanan
     var x2, z2;
@@ -78,26 +83,36 @@ function main(){
     }
 
     for(var i_side = 0; i_side < NumSides-1; i_side++) {
-        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points2, colors2, cyl_vertices2);
+        quad(i_side+1, i_side, NumSides+i_side, NumSides+i_side+1, points2, colors2, cyl_vertices2,normals2);
     }
-    quad(0, NumSides-1, 2*NumSides-1, NumSides, points2, colors2, cyl_vertices2);
+    quad(0, NumSides-1, 2*NumSides-1, NumSides, points2, colors2, cyl_vertices2,normals2);
 
     var len = 6*NumSides;
     colorCube();
 
     var vertices = [...points, ...points2, ...points3];
     var totcolors = [...colors, ...colors2, ...colors3];
+    var totnormals = [...normals, ...normals2];
     var cubeLen = points3.length;
+
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(totnormals), gl.STATIC_DRAW);
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(totcolors), gl.STATIC_DRAW );
 
+    
+
 
     var vertexShaderSource = `
     attribute  vec4 vPosition;
     attribute  vec4 vColor;
+    attribute  vec3 vNormal;
+
     varying vec4 fColor;
+    varying vec3 fNormal;
     
     uniform vec3 theta;
     uniform mat4 u_matrix;
@@ -133,6 +148,7 @@ function main(){
         );
 
         fColor = vColor;
+        fNormal = vNormal;
         gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
      } 
     `;
@@ -140,12 +156,24 @@ function main(){
     var fragmentShaderSource = `
         precision mediump float;
         varying vec4 fColor;
+        varying vec3 fNormal;
+
         uniform vec3 uAmbientConstant;   
         uniform float uAmbientIntensity;
+        uniform vec3 uDiffuseConstant;  // Represents the light color
+        uniform vec3 uLight;
+
         void main() {
             // Calculate the ambient effect
             vec3 ambient = uAmbientConstant * uAmbientIntensity;
-            vec3 phong = ambient; 
+
+            // Calculate the diffuse effect
+            vec3 normalizedNormal = normalize(fNormal);
+            vec3 normalizedLight = normalize(uLight);
+            vec3 diffuse = uDiffuseConstant * max(dot(normalizedNormal, normalizedLight), 0.0);
+            vec3 phong = ambient + diffuse; // + specular;
+            // Apply the shading
+
             vec3 resColor = vec3(fColor);
             gl_FragColor = vec4(resColor * phong, 1.);
            // gl_FragColor = fColor;
@@ -174,7 +202,7 @@ function main(){
     gl.linkProgram(shaderProgram);
 
     // Start using the context (analogy: start using the paints and the brushes)
-     gl.useProgram(shaderProgram);
+  //   gl.useProgram(shaderProgram);
 
     // Teach the computer how to collect
     // the positional values from ARRAY_BUFFER
@@ -192,11 +220,22 @@ function main(){
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
+    var vNormal = gl.getAttribLocation( shaderProgram, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
     thetaLoc = gl.getUniformLocation(shaderProgram, "theta"); 
     gl.clearColor( 0.2, 0.2, 0.2, 1.0 );
+
     const uAmbientConstant = gl.getUniformLocation(shaderProgram, "uAmbientConstant");
     const uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
     
+    // DIFFUSE
+    var uDiffuseConstant = gl.getUniformLocation(shaderProgram, "uDiffuseConstant");
+    var uLight = gl.getUniformLocation(shaderProgram, "uLight");
+  
+
+
     var speed = 0.0165; // nrp
     var dy = 0;
     
@@ -239,6 +278,7 @@ function main(){
         if (dy >= 0.75 || dy <= -0.55) speed = -speed;
 		dy += speed;
 
+        gl.enable(gl.DEPTH_TEST);
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(shaderProgram);
         gl.uniform3fv(thetaLoc, theta);
@@ -257,30 +297,38 @@ function main(){
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
                 0, changeY, 0, 1.];
+
                 //add ambient light
-                gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); 
-                gl.uniform1f(uAmbientIntensity, 0.365); // 200+165
+                // adapted from https://github.com/cg2021c/learn-webgl-hadziq (implement ambient commit)
+                gl.uniform3fv(uDiffuseConstant, [1.0, 1.0  , 1.0]);   // white light
+    
+                   gl.uniform3fv(uLight, [1.2, 0.0 - changeY , 0.0]);  // directional light from the left
+                   gl.uniform3fv(uAmbientConstant, [1.0, 1.0 , 1.0]); // white light
+                   gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
+                   gl.uniformMatrix4fv(u_matrix, false, leftObject);
+                   gl.drawArrays( gl.TRIANGLES, 0, len );
+                   
+                   gl.uniform3fv(uDiffuseConstant, [1.0, 1.0, 1.0]);   // white light
+               
+                   gl.uniform3fv(uLight, [-1.2, 0.0 - changeY, 0.0]);  // directional light from the left
+                   gl.uniform3fv(thetaLoc, theta2);
+                   gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
+                   gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
+                   gl.uniformMatrix4fv(u_matrix, false, rightObject);
+                   gl.drawArrays( gl.TRIANGLES, len, len );
 
-
-        gl.uniformMatrix4fv(u_matrix, false, leftObject);
-        gl.drawArrays( gl.TRIANGLES, 0, len );
-
-        gl.uniform3fv(thetaLoc, theta2);
-        gl.uniformMatrix4fv(u_matrix, false, rightObject);
-        gl.drawArrays( gl.TRIANGLES, len, len );
-
-        //nambah kubus
-        gl.uniform3fv(thetaLoc, theta3);
-        gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
-        gl.uniform1f(uAmbientIntensity, 1); // 100% of light
-        gl.uniformMatrix4fv(u_matrix, false, cubeObject);
-        gl.drawArrays( gl.TRIANGLES, 2 * len, cubeLen );
-        requestAnimationFrame( render );
+                    //nambah kubus
+                    gl.uniform3fv(thetaLoc, theta3);
+                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
+                    gl.uniform1f(uAmbientIntensity, 1); // 100% of light
+                    gl.uniformMatrix4fv(u_matrix, false, cubeObject);
+                    gl.drawArrays( gl.TRIANGLES, 2 * len, cubeLen );
+                    requestAnimationFrame( render );
     }
     render();
 }
 
-function quad(a, b, c, d, points, colors, cyl_vertices) 
+function quad(a, b, c, d, points, colors, cyl_vertices, normals) 
 {
     // We need to parition the quad into two triangles in order for
     // WebGL to be able to render it.  In this case, we create two
