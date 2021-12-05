@@ -43,10 +43,10 @@ Please continue your WebGL application on the same repository as the previous as
 - [ ] Add a diffuse effect to both objects.
 - [ ] Add a plastic specular effect for the left object.
 - [ ] Add a metal specular effect for the object on the right.
-- [ ] Set the cube so that it can be moved upward with the W key-button and downward with the S key-button.
+- [x] Set the cube so that it can be moved upward with the W key-button and downward with the S key-button.
 - [ ] Set the camera to move leftward and rightward linearly (not orbitally) using the A and D key-buttons.
 ## reference link for making cylinder
 https://cse.taylor.edu/~jdenning/classes/cos350/slides/08_Cylinders.html
 https://www.cs.unm.edu/~ANGEL/WebGL/CODE/GEOMETRY/cylinderTest.js
-https://codepen.io/joelchelliah/pen/zGydGY
-http://www.songho.ca/opengl/gl_cylinder.html
+https://github.com/cg2021c/learn-webgl-hadziq
+
