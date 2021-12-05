@@ -116,6 +116,7 @@ function main(){
     
     uniform vec3 theta;
     uniform mat4 u_matrix;
+    uniform mat4 uView;
     void main() {
         // Compute the sines and cosines of theta for each of
         //   the three axes in one computation.
@@ -149,7 +150,7 @@ function main(){
 
         fColor = vColor;
         fNormal = vNormal;
-        gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
+        gl_Position = dilationMatrix * rz * ry * rx * uView * u_matrix * vPosition;
      } 
     `;
 
@@ -202,7 +203,7 @@ function main(){
     gl.linkProgram(shaderProgram);
 
     // Start using the context (analogy: start using the paints and the brushes)
-  //   gl.useProgram(shaderProgram);
+     gl.useProgram(shaderProgram);
 
     // Teach the computer how to collect
     // the positional values from ARRAY_BUFFER
@@ -238,17 +239,39 @@ function main(){
 
     var speed = 0.0165; // nrp
     var dy = 0;
+    var cameraX = 0.0;
+    var cameraY = 0.0
+    var cameraZ = 0.0;
     
     // Interactive graphics with keyboard
     var changeY = 0;
 
+    var uView = gl.getUniformLocation(shaderProgram, "uView");
+    var viewMatrix = glMatrix.mat4.create();
+    glMatrix.mat4.lookAt(
+        viewMatrix,
+        [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
+        [cameraX, 0.0, 0.0],        // the point where the camera look at
+        [0.0, 1.0, 0.0]
+    );
+
     function onKeydown(event) {
         if (event.keyCode == 87 && changeY<2) changeY += 0.165; // Up
-        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // down
-        console.log(changeY);
+        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // Down
+        if (event.keyCode == 65 && cameraX>-0.3) cameraX -= 0.165; // Left
+        if (event.keyCode == 68 && cameraX<0.3) cameraX += 0.165; // Right
+        glMatrix.mat4.lookAt(
+            viewMatrix,
+            [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
+            [cameraX, 0.0, -10],        // the point where the camera look at
+            [0.0, 1.0, 0.0]
+        );
+        console.log(cameraX, cameraY, cameraZ);
+        gl.uniformMatrix4fv(uView, false, viewMatrix);
     }
 
-    document.addEventListener("keyup", onKeydown);
+   // document.addEventListener("keyup", onKeydown);
+   document.addEventListener("keydown", onKeydown);
     /*
             var freeze = false;
             function onKeydown(event) {
