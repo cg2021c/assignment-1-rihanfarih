@@ -176,17 +176,38 @@ function main(){
 
             // Calculate the diffuse effect
 
-            vec3 normalizedNormal = normalize(fNormal); 
-            vec3 normalizedLight = normalize(uLightPosition - vPositionDiffuse);
-            vec3 diffuse = uDiffuseConstant * max(dot(normalizedNormal, normalizedLight), 0.);
+            vec3 normalizedNormal = normalize(fNormal);
+            
+          
+
+            vec3 vLight = uLightPosition - vPositionDiffuse;
+            vec3 normalizedLight = normalize(vLight);
+            vec3 diffuse = vec3(0., 0., 0.);
+
+            float cosTheta = max(dot(normalizedNormal, normalizedLight), 0.);
 
             // Prepare the specular components
-            vec3 Reflector = 2.0 * max(dot(normalizedNormal, normalizedLight), 0.) * fNormal - (uLightPosition - vPositionDiffuse);  
-            vec3 normalizedViewer = normalize(uViewerPosition - vPositionDiffuse);
-            vec3 normalizedReflector = normalize(Reflector);
+            vec3 vReflector = 2.0 * cosTheta * fNormal - (vLight);
+          
+            vec3 vViewer = uViewerPosition - vPositionDiffuse;
+            
+            vec3 normalizedViewer = normalize(vViewer);
+         
+
+            vec3 normalizedReflector = normalize(vReflector);
+            float cosPhi = max(dot(normalizedViewer, normalizedReflector), 0.);
+
             vec3 specular = vec3(0., 0., 0.);
+           
 
             // Calculate the phong reflection effect
+            if (cosTheta > 0.) {
+                diffuse = uDiffuseConstant * cosTheta;
+              //  specular = uSpecularConstant * pow(cosPhi, uShininessConstant);
+                specular = uSpecularConstant * pow(cosTheta, ushininessConstant);
+            }
+            
+
             vec3 phong = ambient + diffuse + specular;
 
             // Apply the shading
@@ -350,7 +371,7 @@ function main(){
                     
                    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
                    gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
-                   gl.uniform1f(uShininessConstant, 4.0); // Plastic 
+                   gl.uniform1f(uShininessConstant, 7.0); // Plastic object
                     
                    gl.uniformMatrix4fv(u_matrix, false, leftObject);
                    gl.drawArrays( gl.TRIANGLES, 0, len );
@@ -363,7 +384,7 @@ function main(){
                     
                    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
                    gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
-                   gl.uniform1f(uShininessConstant, 165.0); // Metal 
+                   gl.uniform1f(uShininessConstant, 150.0); // Metal object
                     
                    gl.uniformMatrix4fv(u_matrix, false, rightObject);
                    gl.drawArrays( gl.TRIANGLES, len, len );
