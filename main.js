@@ -409,7 +409,7 @@ function quad(a, b, c, d, points, colors, cyl_vertices, normals)
     //vertex color assigned by the index of the vertex
 
     var indices = [ a, b, c, a, c, d ];
-    var democolors = [ [1, 0, 0, 1], [0.8, 0.8, 0.8, 1], [0.5, 0.5, 0.5, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.9, 0.8, 1], [0.6, 0.6, 0.6, 1] ];
+    var democolors = [ [1, 0, 0, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.8, 0.8, 1], [0.8, 0.8, 0.8, 1] ];
 
     for ( var i = 0; i < indices.length; ++i ) {
         points.push( cyl_vertices[indices[i]] );
