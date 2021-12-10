@@ -1,5 +1,5 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-f059dc9a6f8d3a56e377f745f24479a46679e63a5d9fe6f495e02850cd0d8118.svg)](https://classroom.github.com/online_ide?assignment_repo_id=5665330&assignment_repo_type=AssignmentRepo)
-# Assignment
+# Assignment 1a
 * Find anything in your surrounding whose name starts with C, H, or M (in English).
 * Put the thing on a flat surface: table, floor, etc.
 * Take photos of the thing from four different perspectives: top right, top left, top rear, top front (you are free to specify the angle).
@@ -22,17 +22,16 @@
  ![top front](https://github.com/cg2021c/assignment-1-rihanfarih/blob/main/pictures/front.jpg)
  
  
- # Webgl Task : Top left - Top right model
+ # Webgl Task : Top left - Top right model (assignment-1b)
+
  
  [View via Codepen](https://codepen.io/rihanfarih/pen/vYZqjYz)
  
- 
- [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-f059dc9a6f8d3a56e377f745f24479a46679e63a5d9fe6f495e02850cd0d8118.svg)](https://classroom.github.com/online_ide?assignment_repo_id=5665330&assignment_repo_type=AssignmentRepo)
- 
+
  
  thank you :)
 
-# Task 3 
+# Task 3 (assignment-1c)
 Please continue your WebGL application on the same repository as the previous assignment (https://classroom.github.com/a/X2bMi7wC) with the following specifications: 
 
 - [x] Create a 3D definition of the object being photographed in your very first assignment. 
@@ -50,4 +49,12 @@ https://cse.taylor.edu/~jdenning/classes/cos350/slides/08_Cylinders.html (for ma
 
 
 https://github.com/cg2021c/learn-webgl-hadziq (for lighting , moving , etc...)
+
+# Hackathon
+1. Clone or download your assignment-1-........ repository from GitHub to the local computer. This repository shall become the initial project of today's Hackathon. Change the HTML document title into "My Lovely WebGL - Your Student ID". Commit with a message of "Challenge #1", then push it back to the GitHub repository.
+2. Delete all the codes with respect to model transformations that are responsible for the animation in the scene and keyboard's event handlers. Commit with a message of "Challenge #2", then push the changes to GitHub.
+3. Add a plane whose color is #xyzxyz (note: this is a hex code with xyz is the last three digits of your student ID) and area is 20x20 units. This plane shall be positioned as a base of the main objects you have created. Commit with a message of "Challenge #3", then push the changes to GitHub. 
+4. Apply a keyboard interaction assigning the SPACE key to be an ON/off switch. When it is ON, the little cube in the center lights up and all the shadings (ambient, diffuse, and specular) are on. When it is off, the cube goes out (it does not glow) and only ambient shading remains. Commit with a message of "Challenge #4", then push the changes to GitHub.
+5. Create an interactive animation using keyboard. When W key is pressed, the cube moves to Z-. When S key is pressed, the cube moves to Z+. When A key is pressed, the cube moves to X-. When D is pressed, the cube moves to X+. When Up key is pressed, the camera zooms in. When Down key is pressed, the camera zooms out. When Left or Right key is pressed, the camera move to leftward or right ward respectively in an orbital manner about the center of the space. Commit with a message of "Challenge #5", then push the changes to GitHub.
+6. Create an interactive animation with mouse so that the cube orbits about the center of the space (use virtual trackball or quaternion approach as taught last week). Commit with a message of "Challenge #6", then push the changes to GitHub.
 
