@@ -13,6 +13,9 @@ var colors2 = [];
 var points3 = [];//kubus
 var colors3 = [];//kubus
 
+var points4 = [];//plane
+var colors4 = [];//plane
+
 var normals = [];
 var normals2 = [];
 
@@ -21,6 +24,7 @@ var normals2 = [];
 var theta = [ 165, 0, 0 ];
 var theta2 = [ 165, 5, 2 ];
 var theta3 = [20, 10, 0]; //nambah kubus
+var theta4 = [0, 0, 0]; //nambah kubus
 
 var thetaLoc;   // rotation uniform
 var cyl_vertices, cyl_colors;
@@ -90,10 +94,11 @@ function main(){
     var len = 6*NumSides;
     colorCube();
 
-    var vertices = [...points, ...points2, ...points3];
-    var totcolors = [...colors, ...colors2, ...colors3];
+    var vertices = [...points, ...points2, ...points3, ...points4];
+    var totcolors = [...colors, ...colors2, ...colors3, ...colors4];
     var totnormals = [...normals, ...normals2];
     var cubeLen = points3.length;
+    var planeLen = points4.length;
 
     var nBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
@@ -116,7 +121,7 @@ function main(){
     
     uniform vec3 theta;
     uniform mat4 u_matrix;
-    uniform mat4 uView;
+  //  uniform mat4 uView;
     void main() {
         // Compute the sines and cosines of theta for each of
         //   the three axes in one computation.
@@ -287,8 +292,7 @@ function main(){
     // Interactive graphics with keyboard
     
     
-    var uView = gl.getUniformLocation(shaderProgram, "uView");
-    var viewMatrix = glMatrix.mat4.create();
+   
     
 
     
@@ -340,9 +344,14 @@ function main(){
                 0., 0., 1., 0.,
                 0, 0, 0, 1.];
 
+                const planeObject = [1., 0., 0., 0.,
+                    0., 1., 0., 0.,
+                    0., 0., 1., 0.,
+                    0, 0, 0, 1.];
+
                 //add ambient light
                 // adapted from https://github.com/cg2021c/learn-webgl-hadziq (implement ambient commit)
-                    gl.uniformMatrix4fv(uView, false, viewMatrix);
+                  //  gl.uniformMatrix4fv(uView, false, viewMatrix);
                     gl.uniform3fv(uDiffuseConstant, [1.0, 1.0  , 1.0]);   // white light
                     gl.uniform3fv(uLightPosition, [6.0, 0.0  , 0.0]); // light position
                     gl.uniform3fv(thetaLoc, theta);
@@ -350,7 +359,7 @@ function main(){
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
                     
                    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
-                   gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
+            //       gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
                    gl.uniform1f(uShininessConstant, 7.0); // Plastic object
                     
                    gl.uniformMatrix4fv(u_matrix, false, leftObject);
@@ -363,7 +372,7 @@ function main(){
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
                     
                    gl.uniform3fv(uSpecularConstant, [1.0, 1.0, 1.0]);  // white light
-                   gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
+             //      gl.uniform3fv(uViewerPosition, [cameraX, cameraY, cameraZ]);
                    gl.uniform1f(uShininessConstant, 150.0); // Metal object
                     
                    gl.uniformMatrix4fv(u_matrix, false, rightObject);
@@ -376,6 +385,16 @@ function main(){
                     gl.uniformMatrix4fv(u_matrix, false, cubeObject);
                     gl.drawArrays( gl.TRIANGLES, 2 * len, cubeLen );
                     requestAnimationFrame( render );
+
+                    //nambah kubus
+                    gl.uniform3fv(thetaLoc, theta4);
+                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
+                    gl.uniform1f(uAmbientIntensity, 1); // 100% of light
+                    gl.uniformMatrix4fv(u_matrix, false, planeObject);
+                    gl.drawArrays( gl.TRIANGLES, 2 * len, planeLen );
+                    requestAnimationFrame( render );
+
+                    
     }
     render();
 }
@@ -444,3 +463,26 @@ function square(a, b, c, d)
         colors3.push( vertexColors[indices[i]] );
     }
 }
+
+function plane (a, b, c, d)
+{
+    var verticesplane = [
+        vec3( -0.15, -0.25,  0.15 ),
+        vec3( -0.15,  0.25,  0.15 ),
+        vec3(  0.15,  0.25,  0.15 ),
+        vec3(  0.15, -0.25,  0.15 ),
+        
+        vec3( 0.15, -0.25, -0.15 ),
+        vec3( 0.15,  0.25, -0.15 ),
+        vec3(  0.15,  0.25, -0.15 ),
+        vec3(  0.15, -0.25, -0.15 )
+    ]
+
+    var indices = [ a, b, c, a, c, d ];
+
+    for ( var i = 0; i < indices.length; ++i ) {
+        points4.push( verticesplane[indices[i]] );
+        colors4.push( vertexColors[indices[i]] );
+    }
+}
+
