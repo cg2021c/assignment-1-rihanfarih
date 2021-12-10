@@ -149,7 +149,7 @@ function main(){
         );
         fColor = vColor;
         fNormal = vNormal;
-        gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition * uView;
+        gl_Position = dilationMatrix * rz * ry * rx * u_matrix * vPosition;
         vPositionDiffuse = (u_matrix * vPosition).xyz;
      } 
     `;
@@ -281,37 +281,18 @@ function main(){
      var uShininessConstant = gl.getUniformLocation(shaderProgram, "uShininessConstant");
     
 
-    var speed = 0.0165; // nrp
-    var dy = 0;
+    
     
     
     // Interactive graphics with keyboard
-    var changeY = 0;
+    
     
     var uView = gl.getUniformLocation(shaderProgram, "uView");
     var viewMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.lookAt(
-        viewMatrix,
-        [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
-        [cameraX, 0.0, 0.0],        // the point where the camera look at
-        [0.0, 1.0, 0.0]
-    );
+    
 
-    function onKeydown(event) {
-        if (event.keyCode == 87 && changeY<2) changeY += 0.165; // Up
-        if (event.keyCode == 83 && changeY>-2) changeY -= 0.165; // Down
-        if (event.keyCode == 65 && cameraX>-0.3) cameraX -= 0.165; // Left
-        if (event.keyCode == 68 && cameraX<0.3) cameraX += 0.165; // Right
-        glMatrix.mat4.lookAt(
-            viewMatrix,
-            [cameraX, cameraY, cameraZ],    // the location of the eye or the camera
-            [cameraX, 0.0, -10],        // the point where the camera look at
-            [0.0, 1.0, 0.0]
-        );
-        console.log(cameraX, cameraY, cameraZ);
-        gl.uniformMatrix4fv(uView, false, viewMatrix);
-    }
-    document.addEventListener("keydown", onKeydown);
+    
+   
     /*
             var freeze = false;
             function onKeydown(event) {
@@ -337,8 +318,7 @@ function main(){
         }
         */
 
-        if (dy >= 0.75 || dy <= -0.55) speed = -speed;
-		dy += speed;
+       
 
         gl.enable(gl.DEPTH_TEST);
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -353,18 +333,18 @@ function main(){
         const rightObject = [1., 0., 0., 0.,
             0., 1., 0., 0.,
             0., 0., 1., 0.,
-            1, dy, 0, 1.];
+            1, 0, 0, 1.];
 
             const cubeObject = [1., 0., 0., 0.,
                 0., 1., 0., 0.,
                 0., 0., 1., 0.,
-                0, changeY, 0, 1.];
+                0, 0, 0, 1.];
 
                 //add ambient light
                 // adapted from https://github.com/cg2021c/learn-webgl-hadziq (implement ambient commit)
                     gl.uniformMatrix4fv(uView, false, viewMatrix);
                     gl.uniform3fv(uDiffuseConstant, [1.0, 1.0  , 1.0]);   // white light
-                    gl.uniform3fv(uLightPosition, [6.0, 0.0 - changeY , 0.0]); // light position
+                    gl.uniform3fv(uLightPosition, [6.0, 0.0  , 0.0]); // light position
                     gl.uniform3fv(thetaLoc, theta);
                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0 , 1.0]); // white light
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
@@ -377,7 +357,7 @@ function main(){
                    gl.drawArrays( gl.TRIANGLES, 0, len );
                    
                    gl.uniform3fv(uDiffuseConstant, [1.0, 1.0, 1.0]);   // white light
-                   gl.uniform3fv(uLightPosition, [-5.0, 0.0 - changeY, 0.0]); // light position
+                   gl.uniform3fv(uLightPosition, [-5.0, 0.0 , 0.0]); // light position
                    gl.uniform3fv(thetaLoc, theta2);
                    gl.uniform3fv(uAmbientConstant, [1.0, 1.0, 1.0]); // white light
                    gl.uniform1f(uAmbientIntensity, 0.365); // 200+165(NRP)
