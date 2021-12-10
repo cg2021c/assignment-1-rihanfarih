@@ -291,11 +291,7 @@ function main(){
     var lightstat =1;
     function onKeyPressed(event) {
         if (event.keyCode == 32) {
-           // presSpace = !presSpace;
-           lightstat ==0;
-        }
-        else{
-            lightstat ==1;
+            presSpace = !presSpace;
         }
     }
     document.addEventListener("keydown", onKeyPressed);
@@ -355,7 +351,7 @@ function main(){
                     0., 0., 1., 0.,
                     0, 0, 0, 1.];
 */
-                if(lightstat==1){
+                if(!presSpace){
                     leftlight = [0, 0, 0];
                     rightlight = [0, 0, 0];
                 }else{
